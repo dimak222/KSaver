@@ -7,7 +7,7 @@
 #-------------------------------------------------------------------------------
 
 title = "Сохранение в старые версии"
-ver = "v1.2.2.1"
+ver = "v1.2.3.0"
 
 #------------------------------Настройки!---------------------------------------
 use_txt_file = True # использовать txt файл (True - да, False - нет)
@@ -481,7 +481,7 @@ def Сheck_version(): # проверяем версию компаса
     iKompasVersion = iKompasObject.ksGetSystemVersion() # текущая версия компаса
     iKompasVersion = iKompasVersion[1] + iKompasVersion[2]*0.1 # разбиваем полученое значение на обычную запись (19.0)
 
-def Сheck_active_file2(): # проверяем открыт ли файл в КОМПАСе
+def Сheck_active_file(): # проверяем открыт ли файл в КОМПАСе
 
     if iApplication.ActiveDocument: # если открыт документ выполнять макрос
         return True # возвращаем значение
@@ -489,22 +489,24 @@ def Сheck_active_file2(): # проверяем открыт ли файл в К
     else: # не открыт документ
         return False # возвращаем значение
 
-def Save_file(): # сохраняем файл/файлы
+def Save_file(mass_saving): # сохраняем файл/файлы
 
     ver = File_version() # определение в какую версию сохранять файл
+
+    ver = Сhoosing_ver(ver) # округление версии сохранения (версия)
 
     if mass_saving: # массовое сохранение включено
 
         saving_file_namber = 0 # счётчик количества обработаных файлов
 
         while iApplication.ActiveDocument: # пока есть открытый документ
-            Saving_file(ver) # сохраняем файл (версия файла)
+            Saving_file(ver, mass_saving) # сохраняем файл (версия файла)
             saving_file_namber += 1 # считаем каждый сохранённый файл
 
         Message("Файлы сохранены!\nВсего файлов обработано: " + str(saving_file_namber)) # сообщение, поверх всех окон с автоматическим закрытием (текст, время закрытия)
 
     else: # одиночное сохранение
-        Saving_file(ver) # сохраняем файл (версия файла)
+        Saving_file(ver, mass_saving) # сохраняем файл (версия файла)
 
 def File_version(): # определение в какую версию сохранять файл
 
@@ -531,33 +533,7 @@ def File_version(): # определение в какую версию сохр
 
     return ver
 
-def Saving_file(ver): # сохраняем файл (версия файла)
-
-    from sys import exit # для выхода из приложения без ошибки
-
-    iKompasDocument = iApplication.ActiveDocument # делаем открытый докумени активным
-
-    PathName = iKompasDocument.PathName # полное имя документа
-
-    if PathName == "": # если нет имени вписать
-        type_doc = {1:"Чертёж.cdw", 2:"Фрагмент.frw", 3:"Спецификация.spw", 4:"Деталь.m3d", 5:"Сборка.a3d", 6:"Текстовый документ.kdw", 7:"Технологическая сборка.t3d"} # типы документов
-        PathName = type_doc[iKompasDocument.DocumentType] # имя в зависимости от типа документа
-
-    file_ver = Сhoosing_ver(ver) # выбор версии сохранения (версия)
-
-    iKompasDocument1 = KompasAPI7.IKompasDocument1(iKompasDocument) # интерфейс документа
-
-    if iKompasDocument1.SaveAsEx(PathName[:-4] + "_v" + str(file_ver[0]) + PathName[-4:], file_ver[1]): # сохранить, добавив к имени версию файла и сменить версию файла
-        Kompas_message("Файл сохранён в версию " + str(file_ver[0])) # сообщение в окне КОМПАСа если он открыт
-
-    else:
-        Kompas_message("Файл не может быть сохранён в v" + str(file_ver[0])) # сообщение в окне КОМПАСа если он открыт
-        exit()
-
-    if mass_saving: # массовое сохранение включено
-        iKompasDocument.Close(0) # 0 - закрыть документ без сохранения; 1 - закрыть документ, сохранив  изменения; 2 - выдать запрос на сохранение документа, если он изменен.
-
-def Сhoosing_ver(ver): # выбор версии сохранения (версия)
+def Сhoosing_ver(ver): # округление версии сохранения (версия)
 
     from sys import exit # для выхода из приложения без ошибки
 
@@ -592,6 +568,30 @@ def Сhoosing_ver(ver): # выбор версии сохранения (верс
         Kompas_message("Сохранение в указанную\nверсию невозможно!") # сообщение в окне КОМПАСа если он открыт
         exit()
 
+def Saving_file(ver, mass_saving): # сохраняем файл (версия файла)
+
+    from sys import exit # для выхода из приложения без ошибки
+
+    iKompasDocument = iApplication.ActiveDocument # делаем открытый докумени активным
+
+    PathName = iKompasDocument.PathName # полное имя документа
+
+    if PathName == "": # если нет имени вписать
+        type_doc = {1:"Чертёж.cdw", 2:"Фрагмент.frw", 3:"Спецификация.spw", 4:"Деталь.m3d", 5:"Сборка.a3d", 6:"Текстовый документ.kdw", 7:"Технологическая сборка.t3d"} # типы документов
+        PathName = type_doc[iKompasDocument.DocumentType] # имя в зависимости от типа документа
+
+    iKompasDocument1 = KompasAPI7.IKompasDocument1(iKompasDocument) # интерфейс документа
+
+    if iKompasDocument1.SaveAsEx(PathName[:-4] + "_v" + str(ver[0]) + PathName[-4:], ver[1]): # сохранить, добавив к имени версию файла и сменить версию файла
+        Kompas_message("Файл сохранён в версию " + str(ver[0])) # сообщение в окне КОМПАСа если он открыт
+
+    else:
+        Kompas_message("Файл не может быть сохранён в v" + str(ver[0])) # сообщение в окне КОМПАСа если он открыт
+        exit()
+
+    if mass_saving: # массовое сохранение включено
+        iKompasDocument.Close(0) # 0 - закрыть документ без сохранения; 1 - закрыть документ, сохранив  изменения; 2 - выдать запрос на сохранение документа, если он изменен.
+
 #-------------------------------------------------------------------------------
 
 if directory_open_files == "source" or final_directory == "source": # если сохранёный файл класть рядом с исходником
@@ -611,15 +611,18 @@ if iApplication.ActiveDocument: # проверяем открыт ли файл 
 
         if mass_saving: # если массовое сохранение включено
             if Askyesnocancel("Сохранить все документы?"): # вопросительное сообщение, поверх всех окон
-                Save_file() # сохраняем файл/файлы
+                Save_file(True) # сохраняем файл/файлы
 
             else: # сохраняем только один
-                mass_saving = False # выключаем массовое сохранение
-                Save_file() # сохраняем файл/файлы
+##                mass_saving = False # выключаем массовое сохранение
+                Save_file(False) # сохраняем файл/файлы
 
-    else:
-        mass_saving = False # выключаем массовое сохранение
-        Save_file() # сохраняем файл/файлы
+        else: # сохраняем только один
+            Save_file(False) # сохраняем файл/файлы
+
+    else: # сохраняем только один
+##        mass_saving = False # выключаем массовое сохранение
+        Save_file(False) # сохраняем файл/файлы
 
 else: # файл не открыт в КОМПАСе
     Message("Открываем папку с файлами! (В разработке)") # сообщение, поверх всех окон с автоматическим закрытием (текст, время закрытия)
