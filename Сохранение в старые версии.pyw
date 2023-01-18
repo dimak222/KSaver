@@ -712,7 +712,9 @@ def ResultPath(iKompasDocument, model_name, Path, ver): # результирую
 
         if PathName == "": # если нет имени вписать
 
-            Message("Файл не был сохранён, укажите папку сохранения") # сообщение, поверх всех окон с автоматическим закрытием (текст, время закрытия)
+            name_and_obozn = Read_name_and_obozn(iKompasDocument) # считывание обозначение и наименование 3D модели
+
+            Message(f"Файл \"{name_and_obozn}\" не был сохранён, укажите папку сохранения") # сообщение, поверх всех окон с автоматическим закрытием (текст, время закрытия)
 
             Path = Window_filedialog("Выберите папку сохранения файлов") # создание окна filedialog
 
@@ -723,6 +725,11 @@ def ResultPath(iKompasDocument, model_name, Path, ver): # результирую
 
     else: # сохранение в папку
 
+        if file_version_name: # если запись версии включена
+            version = f"_v{str(ver[0])}" # добавляем запись версии файла
+        else: # если запись версии выключена
+            version = "" # не вписываем версию
+
         fileBasename = os.path.basename(iKompasDocument.PathName) # имя документа с расширением
         fileBasename_and_expansion = os.path.splitext(fileBasename) # список имя файла с расширением
         basename = fileBasename_and_expansion[0] # имя файла (без расширения)
@@ -731,11 +738,6 @@ def ResultPath(iKompasDocument, model_name, Path, ver): # результирую
         if expansion == "": # если нет расширения (не сохранена деталь)
             type_doc = {1:".cdw", 2:".frw", 3:".spw", 4:".m3d", 5:".a3d", 6:".kdw", 7:".t3d"} # типы документов (Чертёж, Фрагмент, Спецификация, Деталь, Сборка, Текстовый документ, Технологическая сборка)
             expansion = type_doc[iKompasDocument.DocumentType] # имя в зависимости от типа документа
-
-        if file_version_name: # если запись версии включена
-            version = f"_v{str(ver[0])}" # добавляем запись версии файла
-        else: # если запись версии выключена
-            version = "" # не вписываем версию
 
         if model_name: # обозначение и наименование брать из 3D модели
             name_and_obozn = Read_name_and_obozn(iKompasDocument) # считывание обозначение и наименование 3D модели
