@@ -7,7 +7,7 @@
 #-------------------------------------------------------------------------------
 
 title = "KSaver"
-ver = "v1.3.0.0"
+ver = "v1.3.0.1"
 
 #------------------------------Настройки!---------------------------------------
 use_txt_file = True # использовать txt файл (True - да; False - нет)
@@ -66,7 +66,7 @@ def KompasAPI(): # подключение API компаса
         KompasAPI7 = gencache.EnsureModule('{69AC2981-37C0-4379-84FD-5DD2F3C0A520}', 0, 1, 0) # API7 КОМПАСа
         iApplication = Dispatch('Kompas.Application.7') # интерфейс приложения КОМПАС-3D.
 
-        iKompasDocument = iApplication.ActiveDocument # делаем активный открытый документ
+        iKompasDocument = iApplication.ActiveDocument # получить текущий активный документ
 
         iDocuments = iApplication.Documents # интерфейс для открытия документов
 
@@ -864,7 +864,7 @@ def Saving_file(ver, mass_saving, Path): # сохраняем файл (верс
 
     global Stop # для чтения в потоке
 
-    iKompasDocument = iApplication.ActiveDocument # делаем открытый докумени активным
+    iKompasDocument = iApplication.ActiveDocument # получить текущий активный документ
 
     resultPath, originalPath = ResultPath(iKompasDocument, model_name, Path, ver) # результирующий путь сохранения файла, по 3D модели или имени файла (интерфейс док., параметр обозн. и наим. из модели)
 
